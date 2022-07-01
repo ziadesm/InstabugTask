@@ -8,6 +8,7 @@ android {
 
     testOptions {
         unitTests.returnDefaultValues = true
+        unitTests.includeAndroidResources = true
     }
 
     defaultConfig {
@@ -44,4 +45,8 @@ dependencies {
     def truth = "1.1.3"
     testImplementation "com.google.truth:truth:$truth"
     androidTestImplementation "com.google.truth:truth:$truth"
+
+    testImplementation "org.robolectric:robolectric:4.8.1"
+    testImplementation 'androidx.test.ext:junit-ktx:1.1.3'
+    testImplementation 'androidx.test:monitor:1.5.0'
 }

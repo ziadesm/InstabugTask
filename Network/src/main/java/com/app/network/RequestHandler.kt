@@ -1,11 +1,13 @@
 package com.app.network
+import android.util.Log
+import androidx.core.util.Pools
 import com.app.network_helper.NetworkResponse
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 
-class RequestHandler {
+class RequestHandler: Pools.SynchronizedPool<RequestHandler>(4) {
     companion object {
         const val GET : String = "GET"
 
@@ -18,6 +20,15 @@ class RequestHandler {
             }
             return instance!!
         }
+    }
+
+    override fun acquire(): RequestHandler? {
+        return super.acquire()
+    }
+
+    override fun release(instance: RequestHandler): Boolean {
+        Log.e("TAG", "release: >>> ${super.release(instance)}")
+        return super.release(instance)
     }
 
     fun requestGET(url: String): NetworkResponse<String, Throwable> {

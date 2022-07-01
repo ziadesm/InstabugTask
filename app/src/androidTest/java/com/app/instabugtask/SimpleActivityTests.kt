@@ -1,23 +1,25 @@
 package com.app.instabugtask
 import android.content.Context
-import androidx.test.espresso.Espresso
-import androidx.test.espresso.assertion.ViewAssertions
-import androidx.test.espresso.matcher.ViewMatchers
-import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.action.ViewActions.typeTextIntoFocusedView
+import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.rules.ActivityScenarioRule
-import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
-
-import org.junit.Test
-import org.junit.runner.RunWith
-
-import org.junit.Assert.*
+import androidx.test.platform.app.InstrumentationRegistry
+import com.app.utility.getRootViewKeyboard
 import org.junit.Before
 import org.junit.Rule
+import org.junit.Test
+import com.google.common.truth.Truth.assertThat
+import org.junit.Assert.assertEquals
+import org.junit.runner.RunWith
 
 @RunWith(AndroidJUnit4::class)
 class SimpleActivityTests {
-    lateinit var context: Context
+
+    private lateinit var context: Context
 
     @Before
     fun setup() {
@@ -29,16 +31,38 @@ class SimpleActivityTests {
 
     @Test
     fun make_sure_that_activity_is_running() {
-        Espresso.onView(withId(R.id.allWords))
-            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
+        onView(withId(R.id.allWords)).check(matches(isDisplayed()))
     }
 
     @Test
     fun check_visibility_progress_text_loading() {
-        Espresso.onView(withId(R.id.allWords))
-            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
-        Espresso.onView(withId(R.id.progress))
-            .check(ViewAssertions.matches(ViewMatchers.withEffectiveVisibility(ViewMatchers.Visibility.VISIBLE)))
+        onView(withId(R.id.allWords))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.progress))
+            .check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+    }
+
+    @Test
+    fun check_keyboard_visibility() {
+        onView(withId(R.id.search))
+            .check(matches(isNotFocused()))
+        onView(withId(R.id.search)).perform(click())
+        onView(withId(androidx.appcompat.R.id.search_src_text)).perform(typeTextIntoFocusedView("dd"))
+
+        activityScenario.scenario.onActivity {
+            assertThat(it.getRootViewKeyboard()).isTrue()
+        }
+
+        onView(withId(androidx.appcompat.R.id.search_src_text))
+            .check(matches(isFocused()))
+        onView(withId(androidx.appcompat.R.id.search_close_btn))
+            .perform(click())
+        onView(withId(androidx.appcompat.R.id.search_src_text)).check(matches(isFocused()))
+
+        onView(withContentDescription(androidx.appcompat.R.string.abc_toolbar_collapse_description)).perform(click())
+
+        onView(withId(R.id.search))
+            .check(matches(isNotFocused()))
     }
 
     @Test

@@ -39,7 +39,7 @@ constructor(
 
     object WordsEntry : BaseColumns {
         const val TABLE_NAME = "entry"
-        const val COLUMN_NAME_TITLE = "words"
+        const val COLUMN_NAME_TITLE = "all_words"
         const val COLUMN_NAME_DATA = "data"
     }
 }

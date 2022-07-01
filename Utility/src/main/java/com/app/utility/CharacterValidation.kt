@@ -1,4 +1,5 @@
 package com.app.utility
+import android.content.Context
 import android.util.Log
 import androidx.core.text.isDigitsOnly
 import com.app.utility.model.CharacterModel
@@ -21,6 +22,16 @@ object CharacterValidation {
         }
 
         return list
+    }
+
+    fun getWeekDays(key: String, context: Context) = when (key) {
+        "saturday" -> context.getString(R.string.saturday)
+        "sunday" -> context.getString(R.string.sunday)
+        "monday" -> context.getString(R.string.monday)
+        "tuesday" -> context.getString(R.string.tuesday)
+        "wednesday" -> context.getString(R.string.wednesday)
+        "thursday" -> context.getString(R.string.thursday)
+        else -> context.getString(R.string.friday)
     }
 
     fun sortingCharactersBy(

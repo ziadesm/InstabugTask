@@ -10,52 +10,53 @@ import com.app.network_helper.NetworkResponse
 import com.app.utility.CharacterValidation
 import com.app.utility.model.CharacterModel
 import com.app.utility.model.SortWord
-import java.util.concurrent.Executors
+import java.util.concurrent.*
 
 class StateHolderView constructor(
     private val mDatabase: DatabaseHelperSingleton,
-    private val saved: SavedStateHandle
+    private val saved: SavedStateHandle? = null
 ): ViewModel() {
     private val repo by lazy { CallingInstaBugFree(mDatabase, RequestHandler.getInstance()) }
+
+    private val mExecutor by lazy { Executors.newCachedThreadPool() }
 
     private val _errors: MutableLiveData<NetworkResponse<Any, Throwable>> = MutableLiveData()
     val errors: LiveData<NetworkResponse<Any, Throwable>>
         get() = _errors
 
-    private val _words = saved.getLiveData<List<CharacterModel>>("all_words")
+    private val _words = saved?.getLiveData<List<CharacterModel>>("all_words") ?: MutableLiveData(emptyList())
     val words: LiveData<List<CharacterModel>>
         get() = _words
 
-    private val _backUp = saved.getLiveData<List<CharacterModel>>("sort_search_words")
+    private val _backUp = saved?.getLiveData<List<CharacterModel>>("sort_search_words") ?: MutableLiveData()
 
     private var _sort = SortWord.ASC
 
+    init {
+        val words = mDatabase.gettingWordFromDatabase()
+        _words.postValue(convertStringWordList(words))
+        _backUp.postValue(convertStringWordList(words))
+    }
+
     private fun callNetwork() {
         _errors.value = NetworkResponse.Loading
-        Thread {
+        mExecutor.submit {
             when(val response = repo.callInstaBugWebsite("https://instabug.com")) {
                 is NetworkResponse.Success -> {
                     _words.postValue(convertStringWordList(response.body))
                     _backUp.postValue(convertStringWordList(response.body))
                 }
-                is NetworkResponse.ApiError -> {
-                    _errors.postValue(response)
-                    val words = mDatabase.gettingWordFromDatabase()
-                    _words.postValue(convertStringWordList(words))
-                    _backUp.postValue(convertStringWordList(words))
-                }
+                is NetworkResponse.ApiError -> _errors.postValue(response)
                 else -> {}
             }
-        }.start()
+        }
     }
 
     fun setStateHolder(state: MainStateIntention) {
         when (state) {
             is MainStateIntention.CallNetworkWithoutUrl -> callNetwork()
             is MainStateIntention.SearchFromWordsList -> searchFromWords(state.search)
-            is MainStateIntention.SortAscendingDescending -> {
-                sortingAscendingDescending(_sort)
-            }
+            is MainStateIntention.SortAscendingDescending -> sortingAscendingDescending(_sort)
         }
     }
     private fun sortingAscendingDescending(sortType: SortWord) {
@@ -71,6 +72,7 @@ class StateHolderView constructor(
             }
         } else _words.value = _backUp.value
     }
+
     private fun convertStringWordList(word: String): List<CharacterModel> {
         return CharacterValidation.getCharacterValidationList(word)
     }
