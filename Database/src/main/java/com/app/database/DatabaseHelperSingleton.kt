@@ -22,7 +22,6 @@ class DatabaseHelperSingleton constructor(
     private val db by lazy { WordsDbHelper(mContext) }
 
     fun insertWordsToDatabase(data: String) {
-        Log.e(TAG, "insertWordsToDatabase: >>> ${db.hashCode()}")
         val values = ContentValues().apply {
             put(BaseColumns._ID, 1)
             put(WordsDbHelper.WordsEntry.COLUMN_NAME_TITLE, WORD_TITLE)

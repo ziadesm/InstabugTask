@@ -25,6 +25,18 @@ class AllWordsAdapter(
         updateListItems(list)
     }
 
+    fun sortAscending() {
+        mNewList.sortBy { it.character_name }
+        mOldList.sortBy { it.character_name }
+        notifyItemRangeChanged(0, mNewList.size - 1)
+    }
+
+    fun sortDesc() {
+        mNewList.sortByDescending { it.character_name }
+        mOldList.sortByDescending { it.character_name }
+        notifyItemRangeChanged(0, mNewList.size - 1)
+    }
+
     fun clearList() {
         val count = this.itemCount
         notifyItemRangeRemoved(0, count)

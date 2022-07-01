@@ -29,7 +29,7 @@ class MainActivity : ParentActivity(), SearchView.OnQueryTextListener,
     override val toolbar: Toolbar?
         get() = null
 
-    val mStateHolder: StateHolderView by lazy {
+    private val mStateHolder: StateHolderView by lazy {
         ViewModelProvider(this, viewModelFactory)[StateHolderView::class.java]
     }
     private val mAdapter by lazy { AllWordsAdapter(this) }
@@ -53,8 +53,6 @@ class MainActivity : ParentActivity(), SearchView.OnQueryTextListener,
 
         observeAllErrors()
         observeAllWords()
-
-        mStateHolder.setStateHolder(MainStateIntention.CallNetworkWithoutUrl)
     }
 
     private fun setupRecyclerView() {
@@ -85,10 +83,7 @@ class MainActivity : ParentActivity(), SearchView.OnQueryTextListener,
                 mAdapter.submitList(it)
                 mRecycler.scrollToPosition(0)
             }
-            else {
-//                mAdapter.clearList()
-                Toast.makeText(this, "List is empty :D", Toast.LENGTH_LONG).show()
-            }
+            else Toast.makeText(this, "List is empty :D", Toast.LENGTH_LONG).show()
         }
     }
     private fun showAndHideProgress(b: Boolean) {
@@ -120,9 +115,15 @@ class MainActivity : ParentActivity(), SearchView.OnQueryTextListener,
         mStateHolder.setStateHolder(MainStateIntention.SearchFromWordsList(newText))
         return true
     }
+    private var desc = true
     override fun onMenuItemClick(item: MenuItem?): Boolean {
         when(item?.itemId) {
-            R.id.sort -> mStateHolder.setStateHolder(MainStateIntention.SortAscendingDescending)
+            R.id.sort -> {
+                if (desc) mAdapter.sortAscending()
+                else mAdapter.sortDesc()
+                desc = !desc
+                //mStateHolder.setStateHolder(MainStateIntention.SortAscendingDescending)
+            }
         }
         return true
     }

@@ -4,7 +4,6 @@ import com.app.network.RequestHandler
 import com.app.network_helper.NetworkResponse
 
 class CallingInstaBugFree constructor(
-    private val db: DatabaseHelperSingleton,
     private val api: RequestHandler,
 ) {
 
@@ -12,7 +11,6 @@ class CallingInstaBugFree constructor(
         return try {
             when(val response = api.requestGET(url)) {
                 is NetworkResponse.Success -> {
-                    db.insertWordsToDatabase(response.body)
                     NetworkResponse.Success(response.body)
                 }
                 is NetworkResponse.ApiError -> {
@@ -21,7 +19,7 @@ class CallingInstaBugFree constructor(
                 else -> NetworkResponse.ApiError(Throwable("Unknown Response"), -1)
             }
         } catch (e: Throwable) {
-            NetworkResponse.ApiError(e, 0)
+            NetworkResponse.ApiError(Throwable(""), 0)
         }
     }
 }

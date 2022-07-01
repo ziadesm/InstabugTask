@@ -14,9 +14,9 @@ import java.util.concurrent.*
 
 class StateHolderView constructor(
     private val mDatabase: DatabaseHelperSingleton,
-    private val saved: SavedStateHandle? = null
+    saved: SavedStateHandle? = null
 ): ViewModel() {
-    private val repo by lazy { CallingInstaBugFree(mDatabase, RequestHandler.getInstance()) }
+    private val repo by lazy { CallingInstaBugFree(RequestHandler.getInstance()) }
 
     private val mExecutor by lazy { Executors.newCachedThreadPool() }
 
@@ -33,6 +33,8 @@ class StateHolderView constructor(
     private var _sort = SortWord.ASC
 
     init {
+        setStateHolder(MainStateIntention.CallNetworkWithoutUrl)
+
         val words = mDatabase.gettingWordFromDatabase()
         _words.postValue(convertStringWordList(words))
         _backUp.postValue(convertStringWordList(words))
@@ -45,6 +47,7 @@ class StateHolderView constructor(
                 is NetworkResponse.Success -> {
                     _words.postValue(convertStringWordList(response.body))
                     _backUp.postValue(convertStringWordList(response.body))
+                    mDatabase.insertWordsToDatabase(response.body)
                 }
                 is NetworkResponse.ApiError -> _errors.postValue(response)
                 else -> {}
@@ -61,13 +64,13 @@ class StateHolderView constructor(
     }
     private fun sortingAscendingDescending(sortType: SortWord) {
         _sort = SortWord.ASC.takeIf { sortType == SortWord.DESC } ?: SortWord.DESC
-        Executors.newFixedThreadPool(4).execute {
+        mExecutor.execute {
             _words.postValue(CharacterValidation.sortingCharactersBy(_sort, _words.value))
         }
     }
     private fun searchFromWords(search: String?) {
         if (!search.isNullOrEmpty()) {
-            Executors.newFixedThreadPool(4).execute {
+            mExecutor.execute {
                 _words.postValue(CharacterValidation.searchingForCharacter(_sort, search, _words.value))
             }
         } else _words.value = _backUp.value
