@@ -46,6 +46,6 @@ class SimpleEntityReadWriteTest {
     @Throws(Exception::class)
     fun readInList() {
         val insideDatabase = db.gettingWordFromDatabase()
-//        assertThat(insideDatabase).isEqualTo("user")
+        assertThat(insideDatabase, equalTo("user"))
     }
 }
